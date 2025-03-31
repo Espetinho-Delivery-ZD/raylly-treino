@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treino de Quinta-feira</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .exercise-content {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            width: 100%;
+            max-width: 300px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #timer {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+        /* Media Queries para Responsividade */
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            button {
+                font-size: 14px;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            #exercise-video {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            #timer {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Treino de Quinta-feira</h1>
+
+        <!-- Exibição do botão de iniciar treino -->
+        <button id="start-button" onclick="startWorkout()">Iniciar Treino</button>
+
+        <!-- Área de Exercício (vai aparecer após iniciar o treino) -->
+        <div id="exercise-content" class="exercise-content">
+            <h2 id="exercise-name"></h2>
+            <video id="exercise-video" width="400" controls></video>
+            <p id="exercise-reps"></p>
+            <div id="timer">00:00</div>
+            <button id="next-button" onclick="nextExercise()" style="display:none;">Próximo Exercício</button>
+            <button id="previous-button" onclick="previousExercise()" style="display:none;">Exercício Anterior</button>
+            <button id="finish-button" onclick="finishWorkout()" style="display:none;">Finalizar Treino</button>
+            <button id="back-button" onclick="window.location.href='index.html'" style="display:none;">Voltar ao Início</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const workouts = [
+            { name: "Exercicio 01: HIIT (exercícios rápidos, como burpees, corrida leve, e sprints)", video: "HIIT na bike.mp4", reps: "20 a 30 min" },
+                { name: "Exercicio 02: Agachamento sumô com Halter", video: "Agachamento Sumô com Halter.mp4", reps: "4x12" },
+                { name: "Exercicio 03: Afundo dinâmico com halteres", video: "Agachamento Afundo com Halteres.mp4", reps: "3x12" },
+                { name: "Exercicio 04: Elevação pélvica (hip thrust)", video: "Elevação pélvica -Hip Thrust │Exercício pra fortalecer a região do glúteo e estabilizar o quadril..mp4", reps: "4x12" },
+                { name: "Exercicio 05: Cadeira extensora", video: "cadeira extensora.mp4", reps: "4x15" },
+            ];
+
+            let currentExercise = 0;
+            let timer;
+            let isWorkoutStarted = false;
+            let elapsedTime = 0;
+            let intervalId;
+
+            // Função para carregar o exercício
+            function loadExercise() {
+                const exercise = workouts[currentExercise];
+                document.getElementById("exercise-name").textContent = exercise.name;
+                document.getElementById("exercise-video").src = exercise.video;
+                document.getElementById("exercise-reps").textContent = exercise.reps;
+
+                // Mostrar botões apropriados
+                document.getElementById("next-button").style.display = currentExercise < workouts.length - 1 && isWorkoutStarted ? "inline-block" : "none";
+                document.getElementById("previous-button").style.display = currentExercise > 0 && isWorkoutStarted ? "inline-block" : "none";
+                document.getElementById("finish-button").style.display = currentExercise === workouts.length - 1 && isWorkoutStarted ? "inline-block" : "none";
+                document.getElementById("timer").style.display = isWorkoutStarted ? "inline-block" : "none";
+            }
+
+            // Função para exibir o conteúdo do exercício
+            // Inicialmente o conteúdo de exercício estará escondido
+            document.getElementById("exercise-content").style.display = "none";
+
+            // Iniciar o treino
+            window.startWorkout = function() {
+                isWorkoutStarted = true;
+                document.getElementById("start-button").style.display = "none";
+                document.getElementById("exercise-content").style.display = "flex"; // Mostrar os exercícios
+                loadExercise(); // Carregar o primeiro exercício
+                startTimer(); // Iniciar o cronômetro
+            }
+
+            // Função para iniciar o cronômetro
+            function startTimer() {
+                intervalId = setInterval(() => {
+                    elapsedTime++;
+                    let minutes = Math.floor(elapsedTime / 60);
+                    let seconds = elapsedTime % 60;
+                    document.getElementById("timer").textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            // Próximo exercício
+            window.nextExercise = function() {
+                if (currentExercise < workouts.length - 1) {
+                    currentExercise++;
+                    loadExercise();
+                }
+            }
+
+            // Exercício anterior
+            window.previousExercise = function() {
+                if (currentExercise > 0) {
+                    currentExercise--;
+                    loadExercise();
+                }
+            }
+
+            // Finalizar o treino
+            window.finishWorkout = function() {
+                clearInterval(intervalId);
+                document.getElementById("exercise-content").innerHTML = `
+                    <h2>Treino Finalizado!</h2>
+                    <p>Parabéns! Você completou o treino do dia!</p>
+                    <p>Tempo total de treino: ${document.getElementById("timer").textContent}</p>
+                    <button onclick="window.location.href='index.html'">Voltar ao Início</button>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
